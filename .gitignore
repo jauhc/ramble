@@ -1,0 +1,14 @@
+*.exe
+*.old
+*.bak
+*.cmd
+*.png
+*.jpg
+!lost.png
+notes.txt
+/temp*
+/.vscode
+/.vs
+*.code-workspace
+/nimcache
+/testresults
