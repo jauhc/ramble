@@ -7,6 +7,7 @@ import times
 
 # TODO
 #  secure
+#  or just use some framework like jester
 
 # 1 gb = 1024 * 1024 * 1024
 const # holy fuck this became cluttered but const is comptime so its ok i guess
@@ -44,7 +45,6 @@ proc storage_size(): int =
         echo "[scan] found file with size ", len(v)
     return t
 
-
 proc storagedump() =
     var size = storage_size()
     utils.log("storage stats", 3)
@@ -53,6 +53,7 @@ proc storagedump() =
     for i in storage.keys:
         utils.log(&"key: {i}, resource size: {len(storage[i])}", 3)
     utils.log(&"TOTAL USAGE: {size} / {storage_capacity}", 3)
+    #echo GC_getStatistics()
 
 proc checkStorage(datalen:int) =
     #utils.log(&"checking storage..", 3)
@@ -72,7 +73,6 @@ proc createDevResource(res:string, optname:int64 = 0) =
 
     log(&"(+) resource added, name: {optname}, len: {len(res)}",3) #\
     #log(&"(+) resource: {storage[curt]}",3) # prints entire image as text (dont do this)
-
     #storagedump()
 
 proc createResource(res:string): string =
@@ -82,10 +82,8 @@ proc createResource(res:string): string =
 
     log(&"(+) resource added, name: {curt}, len: {len(res)}",3) #\
     #log(&"(+) resource: {storage[curt]}",3) # prints entire image as text (dont do this)
-
     #storagedump()
     return $curt
-
 
 # temp dev shit dont mind
 import std/random
@@ -128,7 +126,7 @@ proc serve {.async.} =
             if req.url.path == "/upload":
                 if req.headers["header_token"] == name:
                     utils.log("wow POSTing works")
-                    if len(req.body) > storage_capacity:
+                    if len(req.body) > storage_capacity: # dunno if this is called BEFORE or after entire upload
                         utils.log("file too big", 3)
                         let headers = {"Content-type": "plain/text; charset=utf-8"}
                         await req.respond(Http200, "fatass", headers.newHttpHeaders())
@@ -182,9 +180,8 @@ proc serve {.async.} =
         else:
             await sleepAsync(500)
 
-
 proc main(): void =
-    if devmode:
+    if devmode: # remove
         tempfile("1655487339358.jpg", 1)
         tempfile("1666295383340844.png", 2)
         tempfile("FenxBtiakAEYj7f.jpg", 3)
