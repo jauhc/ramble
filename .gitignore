@@ -4,6 +4,7 @@
 *.cmd
 *.png
 *.jpg
+*.deps
 !lost.png
 notes.txt
 /temp*
