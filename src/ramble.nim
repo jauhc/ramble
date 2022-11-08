@@ -80,20 +80,21 @@ proc createResource(res:string): string =
     return $curt
 
 # temp dev shit dont mind
-import std/random
-randomize()
-proc tempfile(path:string, optname: int64) =
-    {.used.}
-    let cols = ["red", "blue", "green", "yellow", "purple"]
-    let pick = sample(cols)
-    let rn = rand(100)
+when defined(devmode):
+    import std/random
+    randomize()
+    proc tempfile(path:string, optname: int64) =
+        {.used.}
+        let cols = ["red", "blue", "green", "yellow", "purple"]
+        let pick = sample(cols)
+        let rn = rand(100)
 
-    var d = readFile(path)
-    #echo &"addr: {createResource(path, d)}"
-    createDevResource(d, optname)
-    writeFile(&"temp/TEMPFILE_{pick}_{rn}", d) # no clue why this
+        var d = readFile(path)
+        createDevResource(d, optname)
+        writeFile(&"temp/TEMPFILE_{pick}_{rn}", d) # no clue why this
 
-proc waitforinput() =
+
+proc waitforinput() {.used.} = # not really used, just a relic before async
     storagedump()
     utils.log("***waiting for input***", 3)
     utils.log("***END***", 3)
@@ -171,12 +172,13 @@ proc serve {.async.} =
             await server.acceptRequest(cb)
         else:
             await sleepAsync(500)
+            # could check for hanging clients here
 
 proc main(): void =
-    if devmode: # remove
-        tempfile("1655487339358.jpg", 1)
-        tempfile("1666295383340844.png", 2)
-        tempfile("FenxBtiakAEYj7f.jpg", 3)
+    when defined(devmode): # remove
+        tempfile("3.jpg", 1)
+        tempfile("4.png", 2)
+        tempfile("5.jpg", 3)
         tempfile("1.jpg", 4)
         tempfile("2.jpg", 5)
         storagedump()
@@ -188,7 +190,8 @@ proc init(): bool =
     if not fileExists("config.ini"):
         log("no config.ini present >:(", 1)
         return false
-    if devmode:
+    utils.reloadCfg()
+    when defined(devmode):
         if dirExists("temp"):
             for k in walkDir("temp"):
                 log(&"(!) file found: {k.path}", 3)

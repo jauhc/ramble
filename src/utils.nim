@@ -21,7 +21,7 @@ proc log*(data:string, mode = 0): void =
   else:
     echo "\x1B[37m(-) ", now, " INFO: \x1B[0m" & data
 
-var g_cfgFile = loadConfig("config.ini")
+var g_cfgFile {.threadvar.}: Config
 
 proc readCfg*(val:string): string =
   return g_cfgFile.getSectionValue("", val)
