@@ -37,10 +37,8 @@ proc fetch*(w:string): string =
   var client = newHttpClient()
   return client.getContent(w)
 
-#proc isOdd*[T: SomeNumber](n:T): bool =
 proc isOdd*(n:SomeInteger): bool =
   return testBit(n, 0)
 
-#proc isEven*[T: SomeNumber](n:T): bool =
 proc isEven*(n:SomeInteger): bool =
   return not isOdd(n)
