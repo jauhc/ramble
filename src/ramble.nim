@@ -80,7 +80,7 @@ proc createResource(res:string): string =
     return $curt
 
 # temp dev shit dont mind
-when defined(devmode):
+when (devmode == true):
     import std/random
     randomize()
     proc tempfile(path:string, optname: int64) =
@@ -175,7 +175,7 @@ proc serve {.async.} =
             # could check for hanging clients here
 
 proc main(): void =
-    when defined(devmode): # remove
+    when (devmode == true): # remove
         tempfile("3.jpg", 1)
         tempfile("4.png", 2)
         tempfile("5.jpg", 3)
@@ -191,7 +191,7 @@ proc init(): bool =
         log("no config.ini present >:(", 1)
         return false
     utils.reloadCfg()
-    when defined(devmode):
+    when (devmode == true):
         if dirExists("temp"):
             for k in walkDir("temp"):
                 log(&"(!) file found: {k.path}", 3)
