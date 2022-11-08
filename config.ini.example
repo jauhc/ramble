@@ -1,0 +1,9 @@
+## ALL LOWERCASE FOR SIMPLICITY ##
+
+# examples for `maxsize`
+#   1048576 = 1024 * 1024 = 1 mb
+#   1048576 * 200 = 200mb and so on...
+#   1048576 * 1024 = roughly 1 gb
+
+maxsize = 209715200
+token = "omegasecurepasswordtoken-please-change"

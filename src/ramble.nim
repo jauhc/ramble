@@ -3,7 +3,6 @@ import os
 import utils
 import strformat
 import strutils
-import times
 
 # TODO
 #  secure
@@ -14,10 +13,6 @@ const # holy fuck this became cluttered but const is comptime so its ok i guess
     devmode = true
     host = "localhost"
     port = 8080
-    name: string = if devmode:
-            "totallysecurestringfrfr"
-        else:
-            "qLiRZxH7f$ei&HTkq9#4doW9b%2eEch3$MTopFpctnCc4YPjZjHXaRbk%ZtobeD@ouAE9gncP5Nfdfq~cjvuLWYvcZi3^kA2D"
 
     isSecure = false # todo, TLS/SSL or whatever its called today
 
@@ -108,7 +103,6 @@ proc waitforinput() =
 import std/asynchttpserver
 import std/mimetypes
 import std/asyncdispatch
-import parseutils
 proc serve {.async.} =
     var m = newMimetypes()
     var server = newAsyncHttpServer()
@@ -123,7 +117,7 @@ proc serve {.async.} =
         of HttpPost: # POST, duh
             #utils.log(&"POST: {req}", 3)
             if req.url.path == "/upload":
-                if req.headers["header_token"] == name:
+                if req.headers["header_token"] == utils.readCfg("token"):
                     utils.log("wow POSTing works")
                     if len(req.body) > storage_capacity: # dunno if this is called BEFORE or after entire upload
                         utils.log("file too big", 3)
@@ -191,6 +185,9 @@ proc main(): void =
     return
 
 proc init(): bool =
+    if not fileExists("config.ini"):
+        log("no config.ini present >:(", 1)
+        return false
     if devmode:
         if dirExists("temp"):
             for k in walkDir("temp"):

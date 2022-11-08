@@ -4,6 +4,7 @@ import times
 import strutils
 import httpclient
 import bitops
+import parsecfg
 
 const time = cpuTime()
 
@@ -19,6 +20,14 @@ proc log*(data:string, mode = 0): void =
     echo "\x1B[36m(%) ", now, " DEBUG: \x1B[0m" & data
   else:
     echo "\x1B[37m(-) ", now, " INFO: \x1B[0m" & data
+
+var g_cfgFile = loadConfig("config.ini")
+
+proc readCfg*(val:string): string =
+  return g_cfgFile.getSectionValue("", val)
+
+proc reloadCfg*() =
+  g_cfgFile = loadConfig("config.ini")
 
 proc timestampget*(): auto =
   return now().toTime().toUnix()

@@ -1,11 +1,19 @@
+# binaries
 *.exe
+*.cmd
+
+# mess
 *.old
 *.bak
-*.cmd
+
+# media
 *.png
 *.jpg
-*.deps
 !lost.png
+
+# local stuff
+config.ini
+*.deps
 notes.txt
 /temp*
 /.vscode
