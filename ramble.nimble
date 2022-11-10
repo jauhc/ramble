@@ -24,6 +24,12 @@ task codegen, "clears cache + generates code":
     # todo: platform specific stuff
     exec "nim c --gc:arc --colors:on --cpu:amd64 --os:windows --nimcache:nimcache/ -d:ssl --compileonly --genscript ./src/ramble.nim"
 
+# figure out how to simplify this
+
+task codegenpi, "clears cache + generates code for pi":
+    exec "nim scripts/clearcache.nims"
+    exec "nim c --gc:arc --colors:on --cpu:arm64 --os:linux --nimcache:nimcache/ -d:ssl --compileonly --genscript ./src/ramble.nim"
+
 task omegabuild, "generates c code then builds it with zig c compiler":
     exec "nimble codegen"
     exec "nim scripts/buildreplace.nims"

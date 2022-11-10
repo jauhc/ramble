@@ -12,6 +12,7 @@
 !lost.png
 
 # local stuff
+*.pem
 config.ini
 *.deps
 notes.txt

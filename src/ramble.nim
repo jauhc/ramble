@@ -104,6 +104,8 @@ proc waitforinput() {.used.} = # not really used, just a relic before async
 import std/asynchttpserver
 import std/mimetypes
 import std/asyncdispatch
+import std/net
+
 proc serve {.async.} =
     var m = newMimetypes()
     var server = newAsyncHttpServer()
@@ -166,7 +168,7 @@ proc serve {.async.} =
 
 
     server.listen(Port(port))#, "0.0.0.0")
-    
+
     while true:
         if server.shouldAcceptRequest():
             await server.acceptRequest(cb)
