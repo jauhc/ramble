@@ -26,7 +26,7 @@ const # holy fuck this became cluttered but const is comptime so its ok i guess
 #const storage_size = 1024 * 1024 * 1024 # 128 mb
 
 #import base64
-const areyoulost = readFile("lost.png")
+const areyoulost = readFile("res/lost.png")
 
 import std/tables
 var storage {.threadvar.}: OrderedTableRef[int64, string]
@@ -104,13 +104,13 @@ proc waitforinput() {.used.} = # not really used, just a relic before async
 import std/asynchttpserver
 import std/mimetypes
 import std/asyncdispatch
+import std/asyncnet
 import std/net
 
 proc serve {.async.} =
     var m = newMimetypes()
     var server = newAsyncHttpServer()
     proc cb(req: Request) {.async, gcsafe.} =
-
         proc bozofound(path:string, who:string) {.async.} =
             utils.log(&"bozo ({who}) found nowhere {path}", 3)
             let headers = {"Content-type": "image/png; charset=utf-8"}
@@ -166,8 +166,7 @@ proc serve {.async.} =
             let headers = {"Content-type": "plain/text; charset=utf-8"}
             await req.respond(Http200, "", headers.newHttpHeaders())
 
-
-    server.listen(Port(port))#, "0.0.0.0")
+    server.listen(Port(port))#, "0.0.0.0") 
 
     while true:
         if server.shouldAcceptRequest():
@@ -178,11 +177,11 @@ proc serve {.async.} =
 
 proc main(): void =
     when (devmode == true): # remove
-        tempfile("3.jpg", 1)
-        tempfile("4.png", 2)
-        tempfile("5.jpg", 3)
-        tempfile("1.jpg", 4)
-        tempfile("2.jpg", 5)
+        tempfile("res/3.jpg", 1)
+        tempfile("res/4.png", 2)
+        tempfile("res/5.jpg", 3)
+        tempfile("res/1.jpg", 4)
+        tempfile("res/2.jpg", 5)
         storagedump()
     #waitforinput()
     waitFor serve()
