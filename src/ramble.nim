@@ -104,7 +104,6 @@ proc waitforinput() {.used.} = # not really used, just a relic before async
 import std/asynchttpserver
 import std/mimetypes
 import std/asyncdispatch
-import std/asyncnet
 import std/net
 
 proc serve {.async.} =
@@ -124,29 +123,29 @@ proc serve {.async.} =
                     utils.log("wow POSTing works")
                     if len(req.body) > storage_capacity: # dunno if this is called BEFORE or after entire upload
                         utils.log("file too big", 3)
-                        let headers = {"Content-type": "plain/text; charset=utf-8"}
+                        let headers = {"Content-type": "text/plain; charset=utf-8"}
                         await req.respond(Http200, "fatass", headers.newHttpHeaders())
                         return
                     let filename = createResource(req.body) # could return name if needed for response
-                    let headers = {"Content-type": "plain/text; charset=utf-8"}
+                    let headers = {"Content-type": "text/plain; charset=utf-8"}
                     await req.respond(Http200, &"{endpoint}{filename}", headers.newHttpHeaders())
                     return
-                else:
+                else: # make more sane or dont
                     await bozofound(req.url.path, req.hostname)
                     return
-            if req.url.path == "/getip":
-                let headers = {"Content-type": "plain/text; charset=utf-8"}
-                await req.respond(Http200, &"{req.hostname}", headers.newHttpHeaders())
-                return
             await bozofound(req.url.path, req.hostname)
             return
 
         of HttpGet: # GET
+            if req.url.path == "/getip": # why the FUCK cant this work
+                let headers = {"Content-type": "text/plain; charset=utf-8"}
+                await req.respond(Http200, req.hostname, headers.newHttpHeaders())
+                return
             var (dir, requested_file, ext) = splitFile(req.url.path) #/coffee | poopfile | .png
             var mimevar = m.getMimetype(ext)#requested_file.split(".")[^1])
             var wanted_file: int64
             if (requested_file == "favicon" and mimevar == "image/x-icon"): # favicon GET
-                let headers = {"Content-type": "plain/text; charset=utf-8"}
+                let headers = {"Content-type": "text/plain; charset=utf-8"}
                 await req.respond(Http200, "\0", headers.newHttpHeaders())
                 return
 
@@ -160,10 +159,10 @@ proc serve {.async.} =
                 await bozofound(req.url.path, req.hostname)
                 return
 
-            let headers = {"Content-type": &"image/jpg; charset=utf-8"}
+            let headers = {"Content-type": "image/jpg; charset=utf-8"}
             await req.respond(Http200, (storage[wanted_file]), headers.newHttpHeaders())
         else:
-            let headers = {"Content-type": "plain/text; charset=utf-8"}
+            let headers = {"Content-type": "text/plain; charset=utf-8"}
             await req.respond(Http200, "", headers.newHttpHeaders())
 
     server.listen(Port(port))#, "0.0.0.0") 
