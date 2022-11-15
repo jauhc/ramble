@@ -7,3 +7,7 @@
 
 maxsize = 209715200
 token = "omegasecurepasswordtoken-please-change"
+
+host = "localhost" # change to domain or ip
+port = 31966 # feel free to change
+secure = true
