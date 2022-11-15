@@ -22,3 +22,9 @@ suite "Tests for utils.nim":
         assert c.getSectionValue("", "maxsize") == "20200"
         assert c.getSectionValue("", "token") == "poop"
         
+    test "readable sizes":
+        assert toReadable(256) == "256 bytes"
+        assert toReadable(1024) == "1.00 kb"
+        assert toReadable(1024*1024) == "1.00 mb"
+        assert toReadable(1024*1024*200) == "200.00 mb"
+        assert toReadable(1024*1024*1024) == "1.00 gb"

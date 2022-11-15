@@ -22,15 +22,16 @@ task r, "try and build&run":
 task codegen, "clears cache + generates code":
     exec "nim scripts/clearcache.nims"
     # todo: platform specific stuff
-    exec "nim c --gc:arc --colors:on --cpu:amd64 --os:windows --nimcache:nimcache/ -d:ssl --compileonly --genscript ./src/ramble.nim"
+    exec "nim c --gc:arc --colors:on --cpu:amd64 --os:windows --nimcache:nimcache/ --compileonly --genscript ./src/ramble.nim"
 
 # figure out how to simplify this
 
 task codegenpi, "clears cache + generates code for pi":
     exec "nim scripts/clearcache.nims"
-    exec "nim c --gc:arc --colors:on --cpu:arm64 --os:linux --nimcache:nimcache/ -d:ssl --compileonly --genscript ./src/ramble.nim"
+    exec "nim c --gc:arc --colors:on --cpu:arm64 --os:linux --nimcache:nimcache/ --compileonly --genscript ./src/ramble.nim"
 
 task omegabuild, "generates c code then builds it with zig c compiler":
+    # shits broken
     exec "nimble codegen"
     exec "nim scripts/buildreplace.nims"
     cd "nimcache"

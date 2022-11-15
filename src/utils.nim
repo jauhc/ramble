@@ -44,11 +44,6 @@ proc dumpCfg*(safe:bool = true) =
 proc timestampget*(): auto =
     return now().toTime().toUnix()
 
-proc toString(str: seq[char]): string =
-  result = newStringOfCap(len(str))
-  for ch in str:
-    add(result, ch)
-
 proc toReadable*(d:int): string =
     let s = d.intToStr().reversed().toSeq()
     # why
@@ -59,7 +54,7 @@ proc toReadable*(d:int): string =
         return &"{(d/b/b):0.2f} mb"
     if s.len > 3:
         return &"{(d/b):0.2f} kb"
-    return $d & "bytes"
+    return $d & " bytes"
 
 # http get
 proc fetch*(w:string): string =
