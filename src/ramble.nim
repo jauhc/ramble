@@ -5,20 +5,20 @@ import strformat
 import strutils
 
 const
-    areyoulost = readFile("res/lost.png")
-    devmode* = true
+    g_imgAreYouLost: string = readFile("res/lost.png")
+    g_bDevmode*: bool = true
 
 var 
-    iStorage_capacity: int = 1
-    bSecure: bool = false
+    g_iStorage_capacity: int = 1
+    g_bSecure: bool = false
 
 import std/tables
-var storage {.threadvar.}: OrderedTableRef[int64, string]
-storage = newOrderedTable[int64, string]()
+var g_StorageTable {.threadvar.}: OrderedTableRef[int64, string]
+g_StorageTable = newOrderedTable[int64, string]()
 
 proc storage_size(): int =
     var t = 0
-    for v in storage.values:
+    for v in g_StorageTable.values:
         t = t + len(v)
         echo "[scan] found file with size ", utils.toReadable(len(v))
     return t
@@ -28,35 +28,35 @@ proc storagedump() =
     utils.log("storage stats", 3)
     utils.log(&"storage size: {utils.toReadable(size)}", 3)
     utils.log("contents: ", 3)
-    for i in storage.keys:
-        utils.log(&"key: {i}, resource size: {utils.toReadable(len(storage[i]))}", 3)
-    utils.log(&"TOTAL USAGE: {utils.toReadable(size)} / {utils.toReadable(iStorage_capacity)}", 3)
+    for i in g_StorageTable.keys:
+        utils.log(&"key: {i}, resource size: {utils.toReadable(len(g_StorageTable[i]))}", 3)
+    utils.log(&"TOTAL USAGE: {utils.toReadable(size)} / {utils.toReadable(g_iStorage_capacity)}", 3)
     #echo GC_getStatistics()
 
 # returns false if too big
 proc checkStorage(datalen:int): bool =
     utils.log(&"checking storage..", 3)
 
-    if (datalen > iStorage_capacity):
+    if (datalen > g_iStorage_capacity):
         utils.log("file too big! :(", 3)
         return false
 
-    while storage_size() + datalen > iStorage_capacity:
-        for k, v in storage.pairs:
+    while storage_size() + datalen > g_iStorage_capacity:
+        for k, v in g_StorageTable.pairs:
             utils.log(&"storage full, removing {k}...", 3)
-            storage.del(k)
+            g_StorageTable.del(k)
             break
     return true
 
 proc createResource(res:string, optname:int64 = 0): string =
     let curt = (if optname == 0: utils.timestampget() else: optname)
     if checkStorage(len(res)):
-        storage[curt] = res
+        g_StorageTable[curt] = res
     else:
         return "fatass"
 
     log(&"(+) resource added, name: {curt}, len: {utils.toReadable(len(res))}",3) #\
-    #log(&"(+) resource: {storage[curt]}",3) # prints entire image as text (dont do this)
+    #log(&"(+) resource: {g_StorageTable[curt]}",3) # prints entire image as text (dont do this)
     #storagedump()
     return $curt
 
@@ -79,7 +79,7 @@ proc serve {.async, gcsafe.} =
         proc bozofound(path:string, who:string) {.async.} =
             utils.log(&"bozo ({who}) found nowhere {path}", 3)
             let headers = {"Content-type": "image/png; charset=utf-8"}
-            await req.respond(Http200, areyoulost, headers.newHttpHeaders())
+            await req.respond(Http200, g_imgAreYouLost, headers.newHttpHeaders())
 
         case req.reqMethod
         of HttpPost: # POST, duh
@@ -87,7 +87,7 @@ proc serve {.async, gcsafe.} =
             if req.url.path == "/upload":
                 if req.headers["header_token"] == utils.readCfg("token"):
                     utils.log("wow POSTing works")
-                    if len(req.body) > iStorage_capacity: # dunno if this is called BEFORE or after entire upload
+                    if len(req.body) > g_iStorage_capacity: # dunno if this is called BEFORE or after entire upload
                         utils.log("file too big", 3)
                         let headers = {"Content-type": "text/plain; charset=utf-8"}
                         await req.respond(Http200, "fatass", headers.newHttpHeaders())
@@ -95,7 +95,7 @@ proc serve {.async, gcsafe.} =
                     let filename = createResource(req.body) # could return name if needed for response
                     let headers = {"Content-type": "text/plain; charset=utf-8"}
                     let endpoint: string = 
-                        (if bSecure: "https" else: "http") & "://" & utils.readCfg("host") & ":" & utils.readCfg("port")
+                        (if g_bSecure: "https" else: "http") & "://" & utils.readCfg("host") & ":" & utils.readCfg("port")
                     await req.respond(Http200, &"{endpoint}/{filename}", headers.newHttpHeaders())
                     return
                 else: # make more sane or dont
@@ -120,7 +120,7 @@ proc serve {.async, gcsafe.} =
             log(&"{req.hostname} requested file: {requested_file} type: {mimevar}, in {dir}", 3)
             try:
                 wanted_file = parseInt(requested_file)
-                if not storage.hasKey(wanted_file) or wanted_file == 0:
+                if not g_StorageTable.hasKey(wanted_file) or wanted_file == 0:
                     await bozofound(req.url.path, req.hostname)
                     return
             except: # catchall
@@ -128,7 +128,7 @@ proc serve {.async, gcsafe.} =
                 return
 
             let headers = {"Content-type": "image/jpg; charset=utf-8"}
-            await req.respond(Http200, (storage[wanted_file]), headers.newHttpHeaders())
+            await req.respond(Http200, (g_StorageTable[wanted_file]), headers.newHttpHeaders())
         else:
             let headers = {"Content-type": "text/plain; charset=utf-8"}
             await req.respond(Http200, "", headers.newHttpHeaders())
@@ -144,7 +144,7 @@ proc serve {.async, gcsafe.} =
 
 proc main(): void =
     log("@main", 3)
-    when (devmode == true): # remove
+    when (g_bDevmode == true): # remove
         discard createResource(readFile("res/3.jpg"), 1)
         discard createResource(readFile("res/4.png"), 2)
         discard createResource(readFile("res/5.jpg"), 3)
@@ -161,8 +161,8 @@ proc init(): bool =
         log("no config.ini present >:(", 1)
         return false
     utils.reloadCfg()
-    iStorage_capacity = utils.readCfg("maxsize").parseInt
-    bSecure = utils.readCfg("secure").parseBool
+    g_iStorage_capacity = utils.readCfg("maxsize").parseInt
+    g_bSecure = utils.readCfg("secure").parseBool
     utils.log("init successful", 3)
     return true
 
