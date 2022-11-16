@@ -6,14 +6,12 @@ import strutils
 import httpclient
 import bitops
 import parsecfg
-import unicode
-import sequtils
 
-const time = cpuTime()
+const g_fStartTime = cpuTime()
 
 # logging (poorly)
 proc log*(data:string, mode = 0): void =
-    let now = (cpuTime() - time).formatFloat(ffDecimal, 3)
+    let now = (cpuTime() - g_fStartTime).formatFloat(ffDecimal, 3)
     case mode
     of 1: # err
         echo "\x1B[31m(+) ", now, " ERR: \x1B[0m" & data
@@ -53,7 +51,7 @@ proc dumpCfg*(safe:bool = true) =
         tempcopy.setSectionKey("", "token", "<HIDDEN>")
     
     tempcopy.setSectionKey("", "maxsize", toReadable(tempcopy.getSectionValue("", "maxsize").parseInt))
-    const sep = '~'
+    const sep = '='
     echo sep.repeat(8) & "CONFIG_START" & sep.repeat(8) & '\n'
     echo g_cfgFile
     echo sep.repeat(8) & "CONFIG_END" & sep.repeat(8)

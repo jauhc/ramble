@@ -78,6 +78,8 @@ proc serve {.async, gcsafe.} =
     proc cb(req: Request) {.async, gcsafe.} =
         proc bozofound(path:string, who:string) {.async.} =
             utils.log(&"bozo ({who}) found nowhere {path}", 3)
+            if utils.readCfg("timeoutelse").parseBool():
+                return
             let headers = {"Content-type": "image/png; charset=utf-8"}
             await req.respond(Http200, g_imgAreYouLost, headers.newHttpHeaders())
 
@@ -120,18 +122,19 @@ proc serve {.async, gcsafe.} =
             log(&"{req.hostname} requested file: {requested_file} type: {mimevar}, in {dir}", 3)
             try:
                 wanted_file = parseInt(requested_file)
-                if not g_StorageTable.hasKey(wanted_file) or wanted_file == 0:
-                    await bozofound(req.url.path, req.hostname)
-                    return
-            except: # catchall
+            except:
+                await bozofound(req.url.path, req.hostname)
+            if not g_StorageTable.hasKey(wanted_file) or wanted_file == 0:
                 await bozofound(req.url.path, req.hostname)
                 return
 
+            await bozofound(req.url.path, req.hostname)
             let headers = {"Content-type": "image/jpg; charset=utf-8"}
             await req.respond(Http200, (g_StorageTable[wanted_file]), headers.newHttpHeaders())
         else:
-            let headers = {"Content-type": "text/plain; charset=utf-8"}
-            await req.respond(Http200, "", headers.newHttpHeaders())
+            await bozofound(req.url.path, req.hostname)
+            #let headers = {"Content-type": "text/plain; charset=utf-8"}
+            #await req.respond(Http200, "", headers.newHttpHeaders())
 
     server.listen(Port(utils.readCfg("port").parseInt))#, "0.0.0.0") 
 

@@ -30,6 +30,10 @@ task codegenpi, "clears cache + generates code for pi":
     exec "nim scripts/clearcache.nims"
     exec "nim c --gc:arc --colors:on --cpu:arm64 --os:linux --nimcache:nimcache/ --compileonly --genscript ./src/ramble.nim"
 
+task buildpi, "builds for pi":
+    exec "nim scripts/clearcache.nims"
+    exec "nim c --gc:arc --colors:on --cpu:arm64 --os:linux -o:ramble.exe --d:release --opt:size --passL:-s --deadCodeElim:on src/ramble.nim"
+
 task omegabuild, "generates c code then builds it with zig c compiler":
     # shits broken
     exec "nimble codegen"

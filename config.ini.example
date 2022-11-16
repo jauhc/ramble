@@ -5,9 +5,20 @@
 #   1048576 * 200 = 200mb and so on...
 #   1048576 * 1024 = roughly 1 gb
 
+# maximum size of database as bytes
 maxsize = 209715200
+
+# token for auth
 token = "omegasecurepasswordtoken-please-change"
 
-host = "localhost" # change to domain or ip
-port = 31966 # feel free to change
+# to return file path to e.g. sharex
+host = "localhost"
+
+# http or https return in file path
 secure = true
+
+# operating port
+port = 31966
+
+# timeout connection if incorrect path
+timeoutelse = true
